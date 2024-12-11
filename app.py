@@ -30,3 +30,12 @@ class Transaction(db.Model):
     amount = db.Column(db.Float, nullable=False)
     type = db.Column(Enum('withdraw', 'deposit', name='transaction'), nullable=False)
     account = db.relationship('Account', backref='transactions')
+
+#Define api route for the home page
+@app.route('/')  
+def home():
+    return 'Welcome to the Banking API!'
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
