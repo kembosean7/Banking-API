@@ -46,6 +46,24 @@ def create_db():
     except Exception as e:
             return f'Failed to create database: {e}'
 
+#Define route to add sample data for testing
+@app.route('/add-sample-data')
+def add_sample_data():
+    try:
+        existing_account = Account.query.filter_by(email='tadiwa7@gmail.com').first()
+        if existing_account:
+            db.session.delete(existing_account)
+            db.session.commit()
+
+        account = Account(name='Tadiwa', email='tadiwa7@gmail.com', balance=1000.00, account_type='savings')
+        db.session.add(account)
+        db.session.commit()
+        return 'Sample account added successfully'
+    
+    except Exception as e:
+        db.session.rollback()
+        return f"Error occurred: {str(e)}"
+
 
 if __name__ == '__main__':
     app.run(debug=True)
