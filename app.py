@@ -81,6 +81,38 @@ def view_accounts():
     
     except Exception as e:
         return {'error': f'An error occurred while fetching accounts: {str(e)}'}, 500
-        
+
+# Define route to create account
+@app.route('/accounts', methods=['POST'])
+def create_account():
+    data = request.get_json()
+    if not data:
+        return {'error': 'No data provided in the request body'}, 400
+    
+    name = data.get('name')
+    email = data.get('email')
+    balance = data.get('balance', 0.0)
+    account_type = data.get('account_type')
+
+    if not name or not email:
+        return {'error': 'name and email must be provided'}, 400
+    
+    if not account_type:
+        return {'error': 'account type must be specified'}, 400
+
+    if Account.query.filter_by(email=email).first():
+        return {'message': 'Account already exists'}, 400
+
+    try :
+        new_account = Account(name=name, email=email, balance=balance, account_type = account_type)
+        db.session.add(new_account)
+        db.session.commit()
+        return {'message': 'Account created successfully', 'account_id': new_account.id}, 201
+    
+    except Exception as e:
+        db.session.rollback()
+        return {'error': 'An error occurred while creating the account', 'details': str(e)}, 500
+
+
 if __name__ == '__main__':
     app.run(debug=True)
