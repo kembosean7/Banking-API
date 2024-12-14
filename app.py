@@ -31,10 +31,20 @@ class Transaction(db.Model):
     type = db.Column(Enum('withdraw', 'deposit', name='transaction'), nullable=False)
     account = db.relationship('Account', backref='transactions')
 
-#Define api route for the home page
+#Define route for the home page
 @app.route('/')  
 def home():
     return 'Welcome to the Banking API!'
+
+#Define route to create the database
+@app.route('/create-db')
+def create_db():
+    try:
+        with app.app_context():
+            db.create_all()
+            return 'Database created successfully'
+    except Exception as e:
+            return f'Failed to create database: {e}'
 
 
 if __name__ == '__main__':
