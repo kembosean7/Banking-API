@@ -64,6 +64,23 @@ def add_sample_data():
         db.session.rollback()
         return f"Error occurred: {str(e)}"
 
-
+#Define route to view all accounts
+@app.route('/accounts', methods=['GET'])
+def view_accounts():
+    try:
+        accounts = Account.query.all()
+        account_list = []
+        for account in accounts:
+            account_list.append({
+                'id': account.id,
+                'name': account.name,
+                'email': account.email,
+                'balance': account.balance
+            })
+        return {'accounts': account_list}
+    
+    except Exception as e:
+        return {'error': f'An error occurred while fetching accounts: {str(e)}'}, 500
+        
 if __name__ == '__main__':
     app.run(debug=True)
