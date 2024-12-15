@@ -113,7 +113,7 @@ def create_account():
         db.session.rollback()
         return {'error': 'An error occurred while creating the account', 'details': str(e)}, 500
 
-#DeRoute to get account by ID
+#Define route to get account by ID
 @app.route('/accounts/<int:id>', methods=['GET'])
 def get_account(id):
     account = Account.query.get(id)
