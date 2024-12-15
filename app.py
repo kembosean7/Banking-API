@@ -252,8 +252,27 @@ def withdrawl():
     return {'message': 'Withdrawal successful', 'new balance': account.balance}
 
 
+# Define route to fetch transaction history of an account
+@app.route('/accounts/<int:id>/transactions', methods=['GET'])
+def get_transaction_history(id):
+    account = Account.query.get(id)
+    if not account:
+        return {'error': 'Account not found'}, 404
 
-
+    try:
+        transactions = Transaction.query.filter_by(account_id=id).all()
+        transaction_list = []
+        for transaction in transactions:
+            transaction_list.append({
+                'id': transaction.id,
+                'amount': transaction.amount,
+                'type': transaction.type,
+                'account_id': transaction.account_id
+            })
+        return {'account_id': id, 'transactions': transaction_list}, 200
+    
+    except Exception as e:
+        return {'error': f'An error occurred while fetching transactions: {str(e)}'}, 500
     
 if __name__ == '__main__':
     app.run(debug=True)
