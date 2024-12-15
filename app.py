@@ -20,8 +20,7 @@ class Account(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     balance = db.Column(db.Float, default=0.0)
-    account_type = db.Column(Enum('savings', 'current', name='account_type'), nullable=False)
-
+    type = db.Column(Enum('savings', 'current', name='account_type'), nullable=False)
 
 #Define the Transaction model
 class Transaction(db.Model):
@@ -55,7 +54,7 @@ def add_sample_data():
             db.session.delete(existing_account)
             db.session.commit()
 
-        account = Account(name='Tadiwa', email='tadiwa7@gmail.com', balance=1000.00, account_type='savings')
+        account = Account(name='Tadiwa', email='tadiwa7@gmail.com', balance=1000.00, type='savings')
         db.session.add(account)
         db.session.commit()
         return 'Sample account added successfully'
@@ -75,7 +74,8 @@ def view_accounts():
                 'id': account.id,
                 'name': account.name,
                 'email': account.email,
-                'balance': account.balance
+                'balance': account.balance,
+                'type': account.type
             })
         return {'accounts': account_list}
     
@@ -92,19 +92,19 @@ def create_account():
     name = data.get('name')
     email = data.get('email')
     balance = data.get('balance', 0.0)
-    account_type = data.get('account_type')
+    type = data.get('type')
 
     if not name or not email:
         return {'error': 'name and email must be provided'}, 400
     
-    if not account_type:
+    if not type:
         return {'error': 'account type must be specified'}, 400
 
     if Account.query.filter_by(email=email).first():
         return {'message': 'Account already exists'}, 400
 
     try :
-        new_account = Account(name=name, email=email, balance=balance, account_type = account_type)
+        new_account = Account(name=name, email=email, balance=balance, type = type)
         db.session.add(new_account)
         db.session.commit()
         return {'message': 'Account created successfully', 'account_id': new_account.id}, 201
@@ -113,6 +113,20 @@ def create_account():
         db.session.rollback()
         return {'error': 'An error occurred while creating the account', 'details': str(e)}, 500
 
+#DeRoute to get account by ID
+@app.route('/accounts/<int:id>', methods=['GET'])
+def get_account(id):
+    account = Account.query.get(id)
+    if not account:
+        return {'error': 'Account not found'}, 404
+
+    return {
+        'id': account.id,
+        'name': account.name,
+        'email': account.email,
+        'balance': account.balance,
+        'type': account.type
+    }
 
 if __name__ == '__main__':
     app.run(debug=True)
