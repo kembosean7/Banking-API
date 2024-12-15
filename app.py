@@ -182,6 +182,7 @@ def update_account(id):
     
     return {'message': 'Account updated successfully'}, 200
 
+#Define route for depoit transaction
 @app.route('/transactions/deposit', methods=['POST'])
 def deposit():
 
