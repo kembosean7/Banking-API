@@ -33,11 +33,13 @@ class Transaction(db.Model):
 #Define route for the home page
 @app.route('/')  
 def home():
+
     return 'Welcome to the Banking API!'
 
 #Define route to create the database
 @app.route('/create-db')
 def create_db():
+
     try:
         with app.app_context():
             db.create_all()
@@ -48,6 +50,7 @@ def create_db():
 #Define route to add sample data for testing
 @app.route('/add-sample-data')
 def add_sample_data():
+
     try:
         existing_account = Account.query.filter_by(email='tadiwa7@gmail.com').first()
         if existing_account:
@@ -66,6 +69,7 @@ def add_sample_data():
 #Define route to view all accounts
 @app.route('/accounts', methods=['GET'])
 def view_accounts():
+
     try:
         accounts = Account.query.all()
         account_list = []
@@ -85,6 +89,7 @@ def view_accounts():
 # Define route to create account
 @app.route('/accounts', methods=['POST'])
 def create_account():
+
     data = request.get_json()
     if not data:
         return {'error': 'No data provided in the request body'}, 400
@@ -116,6 +121,7 @@ def create_account():
 #Define route to get account by ID
 @app.route('/accounts/<int:id>', methods=['GET'])
 def get_account(id):
+
     account = Account.query.get(id)
     if not account:
         return {'error': 'Account not found'}, 404
@@ -127,6 +133,55 @@ def get_account(id):
         'balance': account.balance,
         'type': account.type
     }
+
+#Define route to update an existing account by ID
+@app.route('/accounts/<int:id>', methods=['PUT'])
+def update_account(id):
+
+    data = request.get_json()
+    if not data:
+        return {'error': 'No data provided for update'}, 400
+    
+    account = Account.query.get(id)
+    if not account:
+        return {'error': 'Account not found'}, 404
+    
+    name = data.get('name')
+    email = data.get('email')
+    balance = data.get('balance')
+    type = data.get('type')
+    
+    if email and Account.query.filter(Account.email == email, Account.id != id).first():
+        return {'error': 'Email already in use by another account'}, 400
+
+    if balance is not None:
+        try:
+            balance = float(balance)
+            if balance < 0:
+                return {'error': 'Balance cannot be negative'}, 400
+        except ValueError:
+            return {'error': 'Invalid balance value'}, 400
+
+    if type and type not in ['savings', 'current']:
+        return {'error': 'Invalid account type. Must be "savings" or "current"'}, 400
+    
+    if name:
+        account.name = name
+    if email :
+        account.email = email
+    if balance is not None:
+        account.balance = balance
+    if type:
+        account.type = type
+
+    try:
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return {'error': 'Database error: ' + str(e)}, 500
+    
+    return {'message': 'Account updated successfully'}, 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
