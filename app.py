@@ -182,7 +182,7 @@ def update_account(id):
     
     return {'message': 'Account updated successfully'}, 200
 
-#Define route for depoit transaction
+#Define route for deposit transaction
 @app.route('/transactions/deposit', methods=['POST'])
 def deposit():
 
@@ -215,6 +215,45 @@ def deposit():
     
     return {'message': 'Deposit successful', 'new balance': account.balance}
 
+#Define route for withdrawl transaction
+@app.route('/transactions/withdraw', methods=['POST'])
+def withdrawl():
 
+    data = request.get_json()
+    if not data:
+        return {'error': 'Request body is missing'}, 400
+    
+    account_id = data.get('id')
+    amount = data.get('amount')
+
+    if not account_id or amount is None:
+        return {'error': 'Account ID and amount are required'}, 400
+    
+    account = Account.query.get(account_id)
+    if not account:
+        return {'error': 'Account not found'}, 404
+
+    if amount <= 0:
+        return {'error': 'Amount must be greater than zero'}, 400
+    
+    if amount > account.balance:
+        return {'error': 'Insufficient balance'}, 400
+    
+    try:
+        account.balance -= amount
+        transaction = Transaction(account_id=account.id, amount=amount, type='withdraw')
+        db.session.add(transaction)
+        db.session.commit()
+    
+    except Exception as e:
+        db.session.rollback()
+        return {'error': f'An error occurred while processing the deposit: {str(e)}'}, 500
+    
+    return {'message': 'Withdrawal successful', 'new balance': account.balance}
+
+
+
+
+    
 if __name__ == '__main__':
     app.run(debug=True)
