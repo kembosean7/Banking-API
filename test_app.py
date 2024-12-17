@@ -74,5 +74,26 @@ class BankingAPITestCase(TestCase):
         self.assertEqual(withdraw_response.status_code, 200)
         self.assertIn('Withdrawal successful', withdraw_response.get_json()['message'])
 
+    def test_withdraw_insufficient_balance(self):
+            # Test withdraw with insufficient balance
+            account_response = self.client.post('/accounts', json={
+                'name': 'Insufficient User',
+                'email': 'insufficientuser@gmail.com',
+                'balance': 100.00,
+                'type': 'savings'
+            })
+            account_id = account_response.get_json()['account_id']
+
+            withdraw_response = self.client.post('/transactions/withdraw', json={
+                'id': account_id,
+                'amount': 150.00
+            })
+            self.assertEqual(withdraw_response.status_code, 400)
+            self.assertIn('Insufficient balance', withdraw_response.get_json()['error'])
+
+  
+if __name__ == '__main__':
+    unittest.main()
+
 if __name__ == '__main__':
     unittest.main()
