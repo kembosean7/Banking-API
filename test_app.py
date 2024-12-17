@@ -112,6 +112,20 @@ class BankingAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(len(response.get_json()['transactions']) > 0)
 
- 
+    def test_delete_account(self):
+        # Test DELETE /accounts/<id>
+        account_response = self.client.post('/accounts', json={
+            'name': 'Delete User',
+            'email': 'deleteuser@gmail.com',
+            'balance': 300.00,
+            'type': 'current'
+        })
+        account_id = account_response.get_json()['account_id']
+
+        delete_response = self.client.delete(f'/accounts/{account_id}')
+        self.assertEqual(delete_response.status_code, 200)
+        self.assertIn('Account deleted successfully', delete_response.get_json()['message'])
+
+
 if __name__ == '__main__':
     unittest.main()
