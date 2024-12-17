@@ -91,9 +91,27 @@ class BankingAPITestCase(TestCase):
             self.assertEqual(withdraw_response.status_code, 400)
             self.assertIn('Insufficient balance', withdraw_response.get_json()['error'])
 
-  
-if __name__ == '__main__':
-    unittest.main()
+    def test_get_transaction_history(self):
+        # Test GET /accounts/<id>/transactions
+        account_response = self.client.post('/accounts', json={
+            'name': 'History User',
+            'email': 'historyuser@gmail.com',
+            'balance': 200.00,
+            'type': 'savings'
+        })
+        account_id = account_response.get_json()['account_id']
 
+        # Perform a deposit
+        self.client.post('/transactions/deposit', json={
+            'id': account_id,
+            'amount': 100.00
+        })
+
+        # Fetch transaction history
+        response = self.client.get(f'/accounts/{account_id}/transactions')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(len(response.get_json()['transactions']) > 0)
+
+ 
 if __name__ == '__main__':
     unittest.main()
