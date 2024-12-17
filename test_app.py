@@ -57,5 +57,22 @@ class BankingAPITestCase(TestCase):
         self.assertEqual(deposit_response.status_code, 200)
         self.assertIn('Deposit successful', deposit_response.get_json()['message'])
 
+    def test_withdraw_transaction(self):
+        # Test POST /transactions/withdraw
+        account_response = self.client.post('/accounts', json={
+            'name': 'Withdraw User',
+            'email': 'withdrawuser@gmail.com',
+            'balance': 500.00,
+            'type': 'current'
+        })
+        account_id = account_response.get_json()['account_id']
+
+        withdraw_response = self.client.post('/transactions/withdraw', json={
+            'id': account_id,
+            'amount': 300.00
+        })
+        self.assertEqual(withdraw_response.status_code, 200)
+        self.assertIn('Withdrawal successful', withdraw_response.get_json()['message'])
+
 if __name__ == '__main__':
     unittest.main()
