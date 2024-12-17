@@ -30,7 +30,6 @@ class BankingAPITestCase(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIn('Account created successfully', response.get_json()['message'])
 
-
     def test_create_account_missing_type(self):
         # Test for missing account type
         response = self.client.post('/accounts', json={
@@ -41,6 +40,22 @@ class BankingAPITestCase(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('account type must be specified', response.get_json()['error'])
 
+    def test_deposit_transaction(self):
+        # Test POST /transactions/deposit
+        account_response = self.client.post('/accounts', json={
+            'name': 'Deposit User',
+            'email': 'deposituser@gmail.com',
+            'balance': 100.00,
+            'type': 'savings'
+        })
+        account_id = account_response.get_json()['account_id']
+
+        deposit_response = self.client.post('/transactions/deposit', json={
+            'id': account_id,
+            'amount': 200.00
+        })
+        self.assertEqual(deposit_response.status_code, 200)
+        self.assertIn('Deposit successful', deposit_response.get_json()['message'])
 
 if __name__ == '__main__':
     unittest.main()
