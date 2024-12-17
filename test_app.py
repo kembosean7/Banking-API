@@ -31,6 +31,16 @@ class BankingAPITestCase(TestCase):
         self.assertIn('Account created successfully', response.get_json()['message'])
 
 
+    def test_create_account_missing_type(self):
+        # Test for missing account type
+        response = self.client.post('/accounts', json={
+            'name': 'Test User',
+            'email': 'testuser@gmail.com',
+            'balance': 500.00
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('account type must be specified', response.get_json()['error'])
+
 
 if __name__ == '__main__':
     unittest.main()

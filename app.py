@@ -2,6 +2,8 @@ from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Enum
 from sqlalchemy.exc import SQLAlchemyError
+from datetime import datetime
+
 
 #Create a Flask app
 app = Flask(__name__)
@@ -28,6 +30,7 @@ class Transaction(db.Model):
     account_id = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     type = db.Column(Enum('withdraw', 'deposit', name='transaction'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     account = db.relationship('Account', backref='transactions')
 
 #Define route for the home page
@@ -52,12 +55,12 @@ def create_db():
 def add_sample_data():
 
     try:
-        existing_account = Account.query.filter_by(email='tadiwa7@gmail.com').first()
+        existing_account = Account.query.filter_by(email='kkuda@gmail.com').first()
         if existing_account:
             db.session.delete(existing_account)
             db.session.commit()
 
-        account = Account(name='Tadiwa', email='tadiwa7@gmail.com', balance=1000.00, type='savings')
+        account = Account(name='Kuda', email='kkuda@gmail.com', balance=50.00, type='current')
         db.session.add(account)
         db.session.commit()
         return 'Sample account added successfully'
@@ -215,9 +218,9 @@ def deposit():
     
     return {'message': 'Deposit successful', 'new balance': account.balance}
 
-#Define route for withdrawl transaction
+#Define route for withdraw transaction
 @app.route('/transactions/withdraw', methods=['POST'])
-def withdrawl():
+def withdraw():
 
     data = request.get_json()
     if not data:
