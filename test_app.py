@@ -126,6 +126,24 @@ class BankingAPITestCase(TestCase):
         self.assertEqual(delete_response.status_code, 200)
         self.assertIn('Account deleted successfully', delete_response.get_json()['message'])
 
+    def test_update_account(self):
+        # Test PUT /accounts/<id> to update account
+        account_response = self.client.post('/accounts', json={
+            'name': 'Update User',
+            'email': 'updateuser@gmail.com',
+            'balance': 100.00,
+            'type': 'savings'
+        })
+        account_id = account_response.get_json()['account_id']
+
+        update_response = self.client.put(f'/accounts/{account_id}', json={
+            'name': 'Updated Name',
+            'email': 'updatedemail@gmail.com',
+            'balance': 400.00,
+            'type': 'current'
+        })
+        self.assertEqual(update_response.status_code, 200)
+        self.assertIn('Account updated successfully', update_response.get_json()['message'])
 
 if __name__ == '__main__':
     unittest.main()
